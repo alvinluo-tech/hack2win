@@ -1,0 +1,37 @@
+{
+  "name": "hack2win",
+  "version": "15.0",
+  "status": "Stable",
+  "license": "MIT",
+  "author": "alvinluo-tech",
+  "email": "luoyaosheng123@gmail.com",
+  "description": "Autonomous production-grade hackathon orchestration engine: theme decoding, dialectic research, 10k+ LOC Clean-Architecture full-stack delivery, unbounded 3D/Voxel interfaces, and dual mechanical verification gates.",
+  "repository": "https://github.com/alvinluo-tech/hack2win",
+  "manifest_url": "https://raw.githubusercontent.com/alvinluo-tech/hack2win/main/skill.json",
+  "entrypoint": "SKILL.md",
+  "install_state_file": "~/.hack2win/install_state.json",
+  "knowledge_modules": 16,
+  "cli_tools": [
+    "scripts/verify_project.py",
+    "scripts/verify_production_complexity.py",
+    "scripts/ui_shot.py",
+    "scripts/list_skills.py",
+    "scripts/validate_skill.py",
+    "scripts/update_check.py"
+  ],
+  "supported_agents": {
+    "claude-code": "~/.claude/skills/hack2win/",
+    "codex": "~/.codex/skills/hack2win/ + ~/.codex/AGENTS.md managed block + /hack2win prompt",
+    "opencode": "~/.config/opencode/skill/hack2win/",
+    "cursor": ".cursor/rules/hack2win.mdc",
+    "windsurf": ".windsurf/rules/hack2win.md",
+    "github-copilot": ".github/copilot-instructions.md",
+    "zcode": "~/.zcode/skills/hack2win/",
+    "agents-md": "~/.agents/skills/hack2win/ (universal convention)"
+  },
+  "runtimes": {
+    "python": ">=3.10",
+    "node": ">=18",
+    "dependencies": "stdlib-only for all CLI tools"
+  }
+}

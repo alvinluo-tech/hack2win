@@ -15,7 +15,7 @@
   <a href="#-system-architecture">Architecture</a> •
   <a href="#-showcase-gallery">Showcase</a> •
   <a href="#-quick-start">Quick Start</a> •
-  <a href="#-the-14-reference-manuals">Manuals</a> •
+  <a href="#-the-16-reference-manuals">Manuals</a> •
   <a href="#-verification-cli-suite">CLI Suite</a> •
   <a href="#-battle-tested-track-record">Benchmarks</a>
 </p>
@@ -27,7 +27,7 @@
 ---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Release: v14.0](https://img.shields.io/badge/Release-v14.0-blueviolet.svg?style=for-the-badge)](https://github.com/alvinluo-tech/hack2win/releases)
+[![Release: v15.0](https://img.shields.io/badge/Release-v15.0-blueviolet.svg?style=for-the-badge)](https://github.com/alvinluo-tech/hack2win/releases)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933.svg?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x%20Strict-3178C6.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -275,7 +275,7 @@ The installer is **idempotent** (safe to re-run) and uses marked blocks (`>>> ha
 
 ---
 
-## 📚 The 14 Reference Manuals
+## 📚 The 16 Reference Manuals
 
 `hack2win` is driven by a comprehensive, modular knowledge base. Every manual is versioned, relative, and completely self-contained:
 
@@ -298,8 +298,50 @@ The installer is **idempotent** (safe to re-run) and uses marked blocks (`>>> ha
 | `11` | [`11-enterprise-complexity-architecture.md`](references/11-enterprise-complexity-architecture.md) | 8-subsystem breakdown, sub-agent parallelization, and Top Open-Source Caliber delivery standards. |
 | `12` | [`12-winning-ui-patterns.md`](references/12-winning-ui-patterns.md) | Reverse-engineering real hackathon winners (*PolyAgents*, *AudiThor*, *Voodo*, *Storylayer*), 4D interface space. |
 | `13` | [`13-winning-knowledge.md`](references/13-winning-knowledge.md) | 30 verified case studies and winner post-mortems from top hackathons. |
+| `14` | [`14-intake-config.md`](references/14-intake-config.md) | Machine-readable run contract: `run-config.json` as the single frozen source of truth, field semantics, freeze & change discipline. |
+| `15` | [`15-audit-gates.md`](references/15-audit-gates.md) | Gate inventory, BLOCKER/WARNING/INFO severity model, loop-back routing table, evidence conventions, verifier-agent interface. |
 
 </details>
+
+---
+
+## 🧭 The Run Contract (`run-config.json`)
+
+Every run freezes its decisions into **`hackathon-run/run-config.json`** at the end of P0, confirms it with the user once, and then treats it as **read-only for the rest of the run**. It is the machine-readable single source of truth that every downstream gate reads.
+
+```jsonc
+{
+  "schema_version": "1.0",
+  "hackathon":  { "mode": "online", "rubric_source": "published", "sponsor_tracks": ["AWS Open Data"] },
+  "delivery":   { "tier": "T2", "backend": "FastAPI", "frontend": "Next.js 15", "queue": "Redis + ARQ" },
+  "ui":         { "user_pinned": true, "user_brief": "dark pixel-art, animated, 3D-interactive",
+                  "renderer": "React Three Fiber + drei", "viewports": ["1440x900","768x1024","390x844"] },
+  "gates":      { "complexity_floor": true, "click_level_acceptance": true, "sponsor_live_check": "evidence/sponsor-live.log" }
+}
+```
+
+**Why it exists:** without a frozen contract, long agent sessions silently drift — the user-specified 3D voxel world regresses into a generic dark dashboard at P5, the delivery tier quietly drops from T2 to T1, or `queue` is left empty while AI calls block the request thread. The schema lives at [`schemas/run-config.schema.json`](schemas/run-config.schema.json).
+
+---
+
+## 🚦 Audit Gates & Loop-Back Routing
+
+Verification never ends with "looks good enough". Every gate returns one of three severities, and **every BLOCKER names the exact phase it must loop back to**:
+
+| Severity | Meaning | Effect |
+|---|---|---|
+| 🔴 **BLOCKER** | Broken artifact, unmet floor, fabricated evidence | Flow is `exit 1` — **the pipeline cannot advance** |
+| 🟡 **WARNING** | Suboptimal but functional | Must be absorbed before the next round |
+| 🔵 **INFO** | Confirmation that the check actually ran | Prevents silently skipping gates |
+
+| Gate | BLOCKER example | Loop-back target | Retry cap |
+|---|---|---|---|
+| G3 Complexity | LOC / tables / endpoints below floor | **P4** | 2 |
+| G7 Component | Clipped text (V-CLIP) or <20px hit targets | **P5** | 5 |
+| G8 Narrative | Hardcoded fake metrics in animations | **P4** | 2 |
+| G9 Sponsor | Paper-only adapter, no live run log | **P4** | 2 |
+
+Two consecutive failed rounds on the same BLOCKER escalate it to a **root-cause problem**; hitting the retry cap forbids silently shipping known defects — the agent must either downgrade honestly and disclose the limitation, or escalate to the user.
 
 ---
 
@@ -319,9 +361,31 @@ python scripts/ui_shot.py --url "http://localhost:3000" --out-dir "./iterations/
 
 # 4. Local Skills Inventory & Orchestration Matrix
 python scripts/list_skills.py
+
+# 5. Self-Governance: structural invariants of this skill package
+python scripts/validate_skill.py
+
+# 6. Self-Governance: are all 5 installed agent copies in sync with the repo?
+python scripts/update_check.py
 ```
 
 *(Windows developers can also execute the native `.ps1` equivalents located in `scripts/`).*
+
+### 🧬 The Skill Audits Itself
+
+A multi-file skill package rots the same way a codebase does — not through logic bugs, but through **reference drift**: the index points at a manual that was renamed, a new manual is added but never registered (so the agent can never discover it), one host adapter quietly goes missing, or the two language READMEs fall out of sync. `validate_skill.py` treats the package's own structure as the system under test and enforces seven invariant classes:
+
+| Invariant | What it catches |
+|---|---|
+| Reference-index bijection | Dangling links **and** unregistered manuals (both directions) |
+| Adapter coverage | Any of Claude Code / Codex / Cursor / Windsurf / Copilot silently dropped from an installer |
+| Config contract | A `required` field missing from `properties`; `skill.json` version drifting from `SKILL.md` frontmatter |
+| Encoding guard | A Python CLI missing the UTF-8 stdout reconfigure (the exact cause of a past CI failure on Windows) |
+| Bilingual sync | EN/ZH README size divergence beyond 40% |
+| Declaration honesty | README linking a manual that doesn't exist |
+| Installer parity | `install.sh` and `install.ps1` covering different host sets |
+
+It runs as a **hard gate in CI on 3 OS × 3 Python versions**. A red package cannot be published.
 
 ---
 

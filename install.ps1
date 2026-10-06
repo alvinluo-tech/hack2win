@@ -88,13 +88,16 @@ if ($Uninstall) {
 }
 
 Write-Host "Global install (canonical ~/.agents + detected agents):"
+$InstalledTargets = New-Object System.Collections.Generic.List[string]
 foreach ($t in $Targets) {
   if ($t.Always) {
     Write-Host "canonical skill home:"; Copy-Skill $t.Root
+    $InstalledTargets.Add([System.IO.Path]::GetFileName((Split-Path $t.Root -Parent)))
   } elseif (Test-AgentRoot $t) {
     # report the agent by walking one level up from its skills/skill root
     $label = Split-Path (Split-Path $t.Root -Parent) -Leaf
     Write-Host "$label detected:"; Copy-Skill $t.Root
+    $InstalledTargets.Add($label.TrimStart('.'))
   }
 }
 
@@ -130,5 +133,21 @@ if ($ProjectDir) {
   }
 }
 
-Write-Host "Verify: python `"$HOME\.agents\skills\$Skill\scripts\list_skills.py`""
+# Record install state (~/.hack2win/install_state.json) so `update_check.py` can
+# later detect stale or drifted copies across all host directories.
+$ManifestPath = Join-Path $Src "skill.json"
+$SkillVersion = ""
+if (Test-Path $ManifestPath) {
+  try { $SkillVersion = (Get-Content $ManifestPath -Raw | ConvertFrom-Json).version } catch { $SkillVersion = "" }
+}
+$Recorder = Join-Path $HOME ".agents\skills\$Skill\scripts\update_check.py"
+if (Test-Path $Recorder) {
+  $python = Get-Command python -ErrorAction SilentlyContinue
+  if ($python) {
+    & $python.Source $Recorder --record --version $SkillVersion --targets ($InstalledTargets -join ",") | Out-Null
+  }
+}
+
+Write-Host "Verify: python `"$HOME\.agents\skills\$Skill\scripts\validate_skill.py`""
+Write-Host "Verify: python `"$HOME\.agents\skills\$Skill\scripts\update_check.py`""
 Write-Host "Done."

@@ -33,10 +33,20 @@ jobs:
           python -m py_compile scripts/verify_production_complexity.py
           python -m py_compile scripts/ui_shot.py
           python -m py_compile scripts/list_skills.py
+          python -m py_compile scripts/validate_skill.py
+          python -m py_compile scripts/update_check.py
+
+      # Hard gate: the skill package's own structural invariants (reference-index
+      # bijection, adapter coverage, config contract, bilingual sync, encoding guards).
+      - name: Skill Package Structural Invariants
+        run: python scripts/validate_skill.py
 
       - name: Run CLI Smoke Tests
         run: |
           python scripts/list_skills.py
+          python scripts/update_check.py --json
           python scripts/verify_project.py --help
           python scripts/verify_production_complexity.py --help
           python scripts/ui_shot.py --help
+          python scripts/validate_skill.py --help
+          python scripts/update_check.py --help

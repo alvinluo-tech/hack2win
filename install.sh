@@ -62,8 +62,9 @@ if [ "$MODE" = "uninstall" ]; then
 fi
 
 echo "Global install (canonical ~/.agents + any detected agents):"
+INSTALLED_TARGETS="agents"
 copy_skill "$HOME/.agents/skills"
-[ -d "$HOME/.claude" ] && { echo "Claude Code detected:"; copy_skill "$HOME/.claude/skills"; }
+[ -d "$HOME/.claude" ] && { echo "Claude Code detected:"; copy_skill "$HOME/.claude/skills"; INSTALLED_TARGETS="$INSTALLED_TARGETS,claude"; }
 if [ -d "$HOME/.codex" ]; then
   echo "Codex detected:"
   copy_skill "$HOME/.codex/skills"
@@ -71,9 +72,19 @@ if [ -d "$HOME/.codex" ]; then
   mkdir -p "$HOME/.codex/prompts"
   cp "$SRC/adapters/codex-AGENTS-block.md" "$HOME/.codex/prompts/$SKILL_NAME.md"
   echo "  [wired] ~/.codex/prompts/$SKILL_NAME.md (use: /$SKILL_NAME)"
+  INSTALLED_TARGETS="$INSTALLED_TARGETS,codex"
 fi
-[ -d "$HOME/.zcode" ] && { echo "ZCode detected:"; copy_skill "$HOME/.zcode/skills"; }
-[ -d "$HOME/.config/opencode" ] && { echo "OpenCode detected:"; copy_skill "$HOME/.config/opencode/skill"; }
+[ -d "$HOME/.zcode" ] && { echo "ZCode detected:"; copy_skill "$HOME/.zcode/skills"; INSTALLED_TARGETS="$INSTALLED_TARGETS,zcode"; }
+[ -d "$HOME/.config/opencode" ] && { echo "OpenCode detected:"; copy_skill "$HOME/.config/opencode/skill"; INSTALLED_TARGETS="$INSTALLED_TARGETS,opencode"; }
+
+# Record install state (~/.hack2win/install_state.json) so `update_check.py` can
+# later detect stale or drifted copies across all host directories.
+PY_BIN="$(command -v python3 || command -v python || true)"
+if [ -n "$PY_BIN" ]; then
+  SKILL_VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SRC/skill.json" | head -1)"
+  "$PY_BIN" "$HOME/.agents/skills/$SKILL_NAME/scripts/update_check.py" \
+    --record --version "$SKILL_VERSION" --targets "$INSTALLED_TARGETS" || true
+fi
 
 if [ "$MODE" = "project" ]; then
   PROJECT_DIR="$(pwd)"
@@ -87,5 +98,6 @@ if [ "$MODE" = "project" ]; then
   else { echo ""; echo "$MARK_BEGIN"; cat "$SRC/adapters/copilot.md"; echo "$MARK_END"; } >> "$COPILOT"; echo "  [wired] $COPILOT"; fi
 fi
 
-echo "Verify: python \"$HOME/.agents/skills/$SKILL_NAME/scripts/list_skills.py\""
+echo "Verify: python \"$HOME/.agents/skills/$SKILL_NAME/scripts/validate_skill.py\""
+echo "Verify: python \"$HOME/.agents/skills/$SKILL_NAME/scripts/update_check.py\""
 echo "Done."

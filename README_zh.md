@@ -15,7 +15,7 @@
   <a href="#-系统架构全景">系统架构</a> •
   <a href="#-实战展示画廊showcase">实战画廊</a> •
   <a href="#-极速起步">极速起步</a> •
-  <a href="#-14-篇模块化知识库">知识体系</a> •
+  <a href="#-16-篇模块化知识库">知识体系</a> •
   <a href="#-跨平台自动化验证套件">CLI 工具链</a> •
   <a href="#-对抗性实测基准演进">演进历程</a>
 </p>
@@ -27,7 +27,7 @@
 ---
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-[![Release: v14.0](https://img.shields.io/badge/Release-v14.0-blueviolet.svg?style=for-the-badge)](https://github.com/alvinluo-tech/hack2win/releases)
+[![Release: v15.0](https://img.shields.io/badge/Release-v15.0-blueviolet.svg?style=for-the-badge)](https://github.com/alvinluo-tech/hack2win/releases)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-339933.svg?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-5.x%20Strict-3178C6.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -275,12 +275,12 @@ powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall   # 卸载
 
 ---
 
-## 📚 14 篇模块化知识库
+## 📚 16 篇模块化知识库
 
 `hack2win` 拥有严密的模块化参考手册树，全部基于相对路径，**100% 自包含**：
 
 <details open>
-<summary><b>📖 展开查阅 14 篇参考手册索引</b></summary>
+ <summary><b>📖 展开查阅 16 篇参考手册索引</b></summary>
 
 | 编号 | 文档文件 | 核心工程职责与设计原则 |
 |---|---|---|
@@ -298,8 +298,50 @@ powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall   # 卸载
 | `11` | [`11-enterprise-complexity-architecture.md`](references/11-enterprise-complexity-architecture.md) | 8 大子系统解构模型、多子代理工作树分工机制、顶级开源交付标准。 |
 | `12` | [`12-winning-ui-patterns.md`](references/12-winning-ui-patterns.md) | 顶级大奖作品逆向工程（*PolyAgents*, *AudiThor*, *Voodo*, *Storylayer*）、四维界面坐标系。 |
 | `13` | [`13-winning-knowledge.md`](references/13-winning-knowledge.md) | 30 个真实获奖案例复盘与夺奖规律知识库。 |
+| `14` | [`14-intake-config.md`](references/14-intake-config.md) | 运行配置契约：`run-config.json` 作为冻结的单一真值源、字段语义、冻结与变更纪律。 |
+| `15` | [`15-audit-gates.md`](references/15-audit-gates.md) | 审计门清单、BLOCKER/WARNING/INFO 三级严重度、回环路由表、证据留痕规范、验证子代理接口。 |
 
 </details>
+
+---
+
+## 🧭 运行配置契约 (`run-config.json`)
+
+每次运行都会在 P0 结束时把决策冻结进 **`hackathon-run/run-config.json`**，向用户确认一次，此后全程**只读**。它是所有下游验收门共同读取的机器可读单一真值源。
+
+```jsonc
+{
+  "schema_version": "1.0",
+  "hackathon":  { "mode": "online", "rubric_source": "published", "sponsor_tracks": ["AWS Open Data"] },
+  "delivery":   { "tier": "T2", "backend": "FastAPI", "frontend": "Next.js 15", "queue": "Redis + ARQ" },
+  "ui":         { "user_pinned": true, "user_brief": "暗色像素风、带动画、3D 可交互",
+                  "renderer": "React Three Fiber + drei", "viewports": ["1440x900","768x1024","390x844"] },
+  "gates":      { "complexity_floor": true, "click_level_acceptance": true, "sponsor_live_check": "evidence/sponsor-live.log" }
+}
+```
+
+**为什么必须有**：没有冻结契约，长会话中的 agent 会悄悄漂移——用户指定的 3D 体素世界在 P5 退回成通用暗色后台、交付等级从 T2 静默降成 T1、`queue` 留空却把 AI 调用阻塞在请求线程里。Schema 定义见 [`schemas/run-config.schema.json`](schemas/run-config.schema.json)。
+
+---
+
+## 🚦 审计门与回环路由
+
+验收永远不以"差不多能用"收尾。每扇门都返回三级严重度之一，且**每个 BLOCKER 都指名它必须退回的阶段**：
+
+| 严重度 | 含义 | 效果 |
+|---|---|---|
+| 🔴 **BLOCKER** | 产物损坏、底线未达标、证据造假 | 流程 `exit 1`，**禁止向下游推进** |
+| 🟡 **WARNING** | 可用但不达标 | 下一轮必须消化 |
+| 🔵 **INFO** | 确认"这项检查真的跑了" | 防止静默跳过验收 |
+
+| 门 | BLOCKER 示例 | 回环目标 | 重试上限 |
+|---|---|---|---|
+| G3 复杂度门 | 代码量 / 表 / 端点低于底线 | **P4** | 2 |
+| G7 组件门 | 文本裁切 (V-CLIP) 或可点击区 <20px | **P5** | 5 |
+| G8 叙事真值门 | 动效中硬编码伪高光数值 | **P4** | 2 |
+| G9 赞助商活体门 | 纸面适配器、无真实运行日志 | **P4** | 2 |
+
+同一 BLOCKER 连续两轮未修复即升级为**根因问题**；达到重试上限后**禁止静默交付已知缺陷**——必须诚实降级并披露限制，或向用户升级求助。
 
 ---
 
@@ -319,9 +361,31 @@ python scripts/ui_shot.py --url "http://localhost:3000" --out-dir "./iterations/
 
 # 4. 本机已装技能盘点与编排注册表核验
 python scripts/list_skills.py
+
+# 5. 自我治理：技能包自身的结构不变量校验
+python scripts/validate_skill.py
+
+# 6. 自我治理：5 个宿主目录的副本是否与仓库同源
+python scripts/update_check.py
 ```
 
 *(Windows 开发者亦可直接调用 `scripts/` 下对应的 `.ps1` 原生脚本)*。
+
+### 🧬 技能包会自我审计
+
+多文件技能包腐化的方式与代码库一样——不是逻辑出错，而是**引用漂移**：索引指向了被改名的文档、新增文档从未登记（agent 永远发现不了它）、某个宿主适配器悄悄漏端、双语 README 失去同步。`validate_skill.py` 把技能包自身的结构当作被测系统，强制七类不变量：
+
+| 不变量 | 拦截的问题 |
+|---|---|
+| 文档索引双向一致 | 悬空链接 **与** 未登记文档（两个方向都查） |
+| 适配器覆盖 | Claude Code / Codex / Cursor / Windsurf / Copilot 任一被装机脚本漏掉 |
+| 配置契约 | `required` 字段不在 `properties` 中；`skill.json` 版本与 `SKILL.md` frontmatter 漂移 |
+| 编码守卫 | 某个 Python CLI 漏了 UTF-8 stdout 重配（正是历史上 Windows CI 失败的真因） |
+| 双语同步 | 中英 README 体积差异超过 40% |
+| 声明诚实 | README 链接了不存在的文档 |
+| 安装器对等 | `install.sh` 与 `install.ps1` 覆盖的宿主集合不一致 |
+
+它作为 **CI 硬门在 3 种 OS × 3 个 Python 版本上运行**。技能包一旦变红，禁止发布。
 
 ---
 

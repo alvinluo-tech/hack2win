@@ -7,6 +7,9 @@ description: >
   UI设计突破传统工作台定式(支持2D像素世界、Three.js 3D空间、复古OS终端、无限画布与高密驾驶舱多维隐喻;用户指定风格绝对优先并专业升维)/架构设计/测试/框架集成等领域能力通过引用其他技能完成(缺失则安装,见 references/10-orchestration.md),
   人类只需说"用某技能优化某方面"即可全程推进。
   NOT for: 简单的静态单文件实验(无工程化诉求时不套用本流程)。
+version: 15.0
+status: Stable
+author: alvinluo-tech
 ---
 
 # hack2win — 黑客松总控层开发引擎 (万行级复杂生产系统版)
@@ -40,9 +43,11 @@ description: >
    │   └── start-all.ps1      一键冷启动管理脚本
    ├── 04-devlog.md           构建日志(里程碑/多代理装配/取舍记录)
    ├── 05-pitch/              slides、demo视频脚本、Q&A卡
+   ├── evidence/              审计证据留痕(每个门的产出+头部结论,见 15 §4)
    ├── iterations/            迭代引擎留痕 (多轮视觉环对比截图+四维质量评分)
    └── SUBMISSION.md          提交清单
    ```
+   **`hackathon-run/run-config.json` 是本次运行的机器可读单一真值源**(P0 结束生成、P1 前向用户确认、之后全程只读): 冻结赛事信息/交付等级/技术栈/UI 风格与视口/启用的门。字段契约见 [`schemas/run-config.schema.json`](schemas/run-config.schema.json) 与 [14-intake-config.md](references/14-intake-config.md)。**没有它, 后续所有"验收门"都只是口头承诺。**
 2. **时间盒**: 开工先问/估总时间 T,按比例分配: P0 5% / P1 10% / P2 15% / P3 10% / P4 40% / P5 10% / P6 10%。每阶段到点必须收敛——采用多子代理并行推进各子系统(见 11 §3)，保障庞大工程在时间盒内完整闭环。
 3. **双重机械化验收门**: 每阶段末尾对照验收门自查，P4 结束必须同时通过 `verify-project.ps1` 和 `verify-production-complexity.ps1` 双重脚本校验，不过关严禁进入下一阶段。
 4. **并行借力与多代理分工**: 架构设计、数据表模型、API 路由、前端布局壳、异步任务队列由主总控派离子代理并行突进；主总控守住接口契约并在汇合点执行集成构建。
@@ -50,6 +55,7 @@ description: >
 6. **外部情报**: 本机装有 agent-reach 时,优先用其 Exa 通道(`mcporter call exa.web_search_exa query='关键词' numResults=6`)；来源全部记录进 02-market.md。
 7. **平台合规与合规红线**: 全部工作赛内完成；AI 可以大胆用但必须在提交中如实披露用法；不做现有 AI 工具的纯套壳。
 8. **编排优先**: 遇到领域能力需求(UI/架构/测试/框架集成),先查 10-orchestration.md 注册表引用对应技能(缺失则按流程安装)。验收权始终在本技能。
+9. **三级审计结论 + 回环路由 (Audit Loop Discipline)**: 每次验收必须收尾为 **BLOCKER / WARNING / INFO** 三级发现, 落盘到 `hackathon-run/evidence/` 且文件头部写明 `GATE / AT / RESULT / LOOP-TO / RETRY`。**发现 BLOCKER 后严禁自由发挥修复方向**——必须查 [15-audit-gates.md](references/15-audit-gates.md) §3 回环路由表, 按指名阶段退回重做; 同一 BLOCKER 连续两轮未修复即升级为根因问题; 达到重试上限仍失败时**禁止静默交付已知缺陷**, 只能诚实降级声明或向用户升级求助。**INFO 必须对应一条真实执行过的命令及其原始输出, 严禁用来假装"检查过了"。**
 
 ## 交付规模分级(先定规模,再动手)
 
@@ -115,7 +121,7 @@ P3 结束时必须宣布本次交付等级并写进 03-definition.md,选级依�
 - **P5**: strangers-test——给没参与的人看截图,能说出"这是干嘛的、给谁用"; **视觉环 ≥2 轮且前后对比截图落 `iterations/`**(三问逐轮回答,最丑三处至少修掉两处); axe a11y 走查 0 严重违规; 窄屏 390px 适配无溢出; **叙事-数据一致性审计全通过(无硬编码伪高光)**。
 - **P6**: 提交项对照比赛官方要求逐项打勾; Q&A卡≥10问; 备用demo(录屏)已上传; 部署地址真实可通。
 
-## 常见死法 Top24(出现在任何一个,立即纠偏)
+## 常见死法 Top26(出现在任何一个,立即纠偏)
 
 1. 开工12小时还没定idea(完美主义 brainstorm)→ 启动 P1 的硬规则:时间盒到点必须用矩阵强行选
 2. scope 覆盖"产品该有的一生",demo 只能展示幻灯片 → 回到演示脚本,以核心主线贯穿整个生产架构
@@ -141,6 +147,8 @@ P3 结束时必须宣布本次交付等级并写进 03-definition.md,选级依�
 22. **视觉动效与真实状态机脱节 (硬编码伪高光)**: 3D 浮字或粒子在假位置爆发、金额硬编码、顶栏余额不跳动 ➔ 动效与指示必须纯粹作为 DomainEvent 真实载荷的单向投影，真值源唯一。
 23. **赞助商技术虚假合规 (纸面适配器)**: 仅在代码写了 Redis/云服务适配器但从未真实跑通一次 ➔ 必须运行 SPONSOR_LIVE_CHECK 留存真实运行日志，严禁将降级方案当作默认交付。
 24. **领域数学模型反向单调性 (越做分越低)**: 核心评分/计费公式缺乏单调性与边界自检，随手写粗糙公式导致破绽 ➔ 必须配备领域数学不变量单调性单元测试。
+25. **配置漂移 (长会话需求蒸发, 最隐蔽)**: 干到 P5 才把用户指定的"3D 像素世界"悄悄做回通用暗色后台，或把 T2 降级成 T1 且无 devlog，或忘了 `queue` 把 AI 调用塞进请求线程 ➔ P0 结束必须生成 `hackathon-run/run-config.json` 并冻结为只读真值源(见 14)，任何变更都要在 devlog 留 `CONFIG-CHANGE` 记录；验收时以该文件为唯一判定基准。
+26. **审计结论模糊化 / 回环自由发挥**: 验收只说"差不多能用"、"小问题下次再说"，发现缺陷却不知道该退回到哪个阶段重做，最终带着已知缺陷交付 ➔ 每份审计必须给出 BLOCKER/WARNING/INFO 三级结论并按 15 §3 回环路由表指名退回；同一 BLOCKER 两轮未修即升级为根因问题；禁止静默交付。
 
 ## 详细文档索引
 
@@ -158,3 +166,16 @@ P3 结束时必须宣布本次交付等级并写进 03-definition.md,选级依�
 - [11-enterprise-complexity-architecture.md](references/11-enterprise-complexity-architecture.md) — 万行级复杂生产系统架构与装配工程蓝图(8大子系统、分阶段装配流水线、多子代理并行机制)
 - [12-winning-ui-patterns.md](references/12-winning-ui-patterns.md) — 顶级黑客松获奖作品逆向工程: 四大界面范式与产品思维模型 (PolyAgents, AudiThor, Voodo, Storylayer 案例解构)
 - [13-winning-knowledge.md](references/13-winning-knowledge.md) — 顶级黑客松夺奖知识库全集 (30个真实赛事与获奖团队核验来源)
+- [14-intake-config.md](references/14-intake-config.md) — 运行配置契约: `run-config.json` 机器可读单一真值源、字段语义、冻结与变更纪律
+- [15-audit-gates.md](references/15-audit-gates.md) — 审计门清单、BLOCKER/WARNING/INFO 三级严重度、回环路由表、证据留痕规范、验证子代理接口
+- [schemas/run-config.schema.json](schemas/run-config.schema.json) — 配置契约的 JSON Schema 定义 (机器校验用)
+
+## 本技能包自身的机械化质检
+
+技能包由 SKILL.md + 15 篇知识库 + 多宿主适配器 + CLI 工具链组成, 最大的腐化风险是**引用漂移**(索引指向不存在的文档、新增文档未登记、适配器漏端、双语失去同步)。因此本仓库同样用机器校验自身结构:
+
+| 命令 | 用途 | 退出码 |
+| :--- | :--- | :--- |
+| `python scripts/validate_skill.py` | 校验技能包结构不变量(索引双向一致/适配器全覆盖/编码守卫/双语同步/安装器对等) | 0 通过 / 1 腐化 |
+| `python scripts/update_check.py` | 检查本机 5 个宿主目录副本是否与仓库同源(版本一致) | 0 一致 / 1 漂移 |
+| `python scripts/list_skills.py` | 盘点本机已装技能并核验编排注册表可用性 | 0 通过 |

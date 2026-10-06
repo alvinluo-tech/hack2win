@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alvinluo-tech/hack2win/schemas/run-config.schema.json",
+  "title": "hack2win run configuration (hackathon-run/run-config.json)",
+  "description": "单次黑客松运行的机器可读契约。人读说明见 references/14-intake-config.md。所有下游阶段(P1-P6)的验收门都以本文件字段为判定输入, 严禁口头约定。",
+  "type": "object",
+  "required": ["schema_version", "hackathon", "delivery", "ui"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "配置契约版本。升级此字段意味着字段语义发生破坏性变更。"
+    },
+    "hackathon": {
+      "type": "object",
+      "required": ["name", "mode", "duration_hours"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "赛事全称, 如 'NASA Space Apps Challenge 2026'" },
+        "organizer": { "type": "string", "description": "主办方" },
+        "url": { "type": "string", "format": "uri", "description": "官方赛事页, 用于 P0 逆向评分标准" },
+        "mode": {
+          "type": "string",
+          "enum": ["online", "onsite", "hybrid"],
+          "description": "评审物理约束来源: online≈10分钟/项目(Devpost), onsite≈3-4分钟/队"
+        },
+        "duration_hours": { "type": "number", "exclusiveMinimum": 0, "description": "可用开发时长, 决定交付等级升级节奏" },
+        "rubric_source": {
+          "type": "string",
+          "enum": ["published", "inferred", "none"],
+          "description": "published=官方公布评分表(必须逐项逆向); none=无评分表, 走通用七维"
+        },
+        "sponsor_tracks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "赞助商技术赛道清单, 对应 SPONSOR_LIVE_CHECK 硬门"
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "required": ["tier"],
+      "additionalProperties": false,
+      "properties": {
+        "tier": {
+          "type": "string",
+          "enum": ["T1", "T2", "T3"],
+          "description": "T1 单页原型 / T2 生产级全栈(默认) / T3 多端集群。降级必须写 devlog 并命中触发器。"
+        },
+        "upgrade_triggers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "从 T2 升级到 T3 的显式条件, 满足任一即必须升级"
+        },
+        "backend": {
+          "type": "string",
+          "description": "后端框架, 如 'FastAPI'; 必须与 run-config 声明的技术栈一致"
+        },
+        "frontend": {
+          "type": "string",
+          "description": "前端框架, 如 'Next.js 15 (App Router)'"
+        },
+        "database": {
+          "type": "string",
+          "description": "数据层, 如 'PostgreSQL 16' 或 'SQLite (WAL)'"
+        },
+        "queue": {
+          "type": "string",
+          "description": "异步后台队列, 如 'Redis + ARQ'。T2 及以上禁止留空(耗时操作不得同步阻塞)"
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "required": ["archetype", "user_pinned"],
+      "additionalProperties": false,
+      "properties": {
+        "user_pinned": {
+          "type": "boolean",
+          "description": "true = 用户明确指定了风格。此时 User-Intent Supremacy 生效, 必须 100% 遵照并专业升维, 严禁回落到通用后台。"
+        },
+        "user_brief": {
+          "type": "string",
+          "description": "用户原话风格诉求, 如 '暗色像素风、带 3D 可交互动画'。user_pinned=true 时必填。"
+        },
+        "archetype": {
+          "type": "string",
+          "description": "从 4D 生成式界面空间推导出的形态, 非四选一模板。例: '3D voxel world + animated agent sprites'",
+          "minLength": 3
+        },
+        "metaphor": { "type": "string", "description": "物理隐喻原形(资产/动词/反馈三重映射的载体)" },
+        "renderer": {
+          "type": "string",
+          "description": "承载该形态的具体技术, 如 'React Three Fiber + drei'、'Phaser 3'、'98.css'"
+        },
+        "viewports": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[0-9]{3,4}x[0-9]{3,4}$" },
+          "default": ["1440x900", "768x1024", "390x844"],
+          "description": "全视野截图验收的视口清单, 每个都必须零布局缺陷"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "user_pinned": { "const": true } }, "required": ["user_pinned"] },
+          "then": { "required": ["user_brief"] }
+        }
+      ]
+    },
+    "gates": {
+      "type": "object",
+      "description": "本项目采用的机械验收门; 缺省即全部启用",
+      "additionalProperties": false,
+      "properties": {
+        "complexity_floor": { "type": "boolean", "default": true, "description": "verify-production-complexity 硬门" },
+        "click_level_acceptance": { "type": "boolean", "default": true, "description": "UI 层逐控件真实点击验收" },
+        "screenshot_acceptance": { "type": "boolean", "default": true, "description": "全视野截图 + DOM 断言" },
+        "sponsor_live_check": { "type": "string", "description": "赞助商技术活体实测留痕路径, 如 'evidence/sponsor-live.log'" },
+        "state_mutation_test": { "type": "boolean", "default": true, "description": "ΔState = Action(State) 状态跃迁增量断言" },
+        "runtime_evidence_dir": { "type": "string", "default": "evidence/", "description": "所有运行证据(日志/截图/录屏)统一落盘目录" }
+      }
+    }
+  }
+}
