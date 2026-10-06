@@ -16,6 +16,12 @@ import argparse
 import subprocess
 from pathlib import Path
 
+# 确保在任意语言的操作系统(如 Windows 默认 cp1252 英文环境)下能够安全输出中文字符
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 def find_browser() -> str | None:
     # 环境变量指定优先
     custom = os.environ.get("CHROME_BIN") or os.environ.get("BROWSER_PATH")

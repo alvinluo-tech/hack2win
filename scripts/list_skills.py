@@ -8,6 +8,12 @@ list_skills.py — 本地已安装技能盘点与 hack2win 编排注册表核验
 import sys
 from pathlib import Path
 
+# 确保在任意语言的操作系统(如 Windows 默认 cp1252 英文环境)下能够安全输出中文字符
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 REGISTRY = [
     {"name": "find-skills",                  "use": "技能发现与安装"},
     {"name": "research",                     "use": "P0-P2 系统调研"},

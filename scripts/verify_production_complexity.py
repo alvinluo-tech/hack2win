@@ -11,6 +11,12 @@ import re
 import argparse
 from pathlib import Path
 
+# 确保在任意语言的操作系统(如 Windows 默认 cp1252 英文环境)下能够安全输出中文字符
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 class ComplexityAuditor:
     def __init__(self, project_path: Path, min_loc: int = 4000, min_tables: int = 8, min_endpoints: int = 16, min_components: int = 15):
         self.project_path = project_path
