@@ -1,20 +1,15 @@
 <div align="center">
 
-```
-██╗  ██╗ █████╗  ██████╗██╗  ██╗██████╗ ██╗    ██╗██╗███╗   ██╗
-██║  ██║██╔══██╗██╔════╝██║ ██╔╝╚════██╗██║    ██║██║████╗  ██║
-███████║███████║██║     █████╔╝  █████╔╝██║ █╗ ██║██║██╔██╗ ██║
-██╔══██║██╔══██║██║     ██╔═██╗ ██╔═══╝ ██║███╗██║██║██║╚██╗██║
-██║  ██║██║  ██║╚██████╗██║  ██╗███████╗╚███╔███╔╝██║██║ ╚████║
-╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝ ╚══╝╚══╝ ╚═╝╚═╝  ╚═══╝
-```
+<img src="docs/assets/logo.svg" alt="hack2win logo" width="180"/>
 
-### **The Autonomous Production-Grade Hackathon & Full-Stack MVP Orchestration Engine**
+# **hack2win**
 
-*Transform AI Coding Agents into Elite Technical Leads & Founding Engineers.*  
+### The Autonomous Production-Grade Hackathon & Full-Stack MVP Orchestration Engine
+
+*Transform AI Coding Agents into Elite Technical Leads & Founding Engineers.*
 *From Three-Round Dialectic Research to 10k+ LOC Clean Architecture, Unbounded 3D/Voxel Interfaces, and Dual Mechanical Verification Gates.*
 
-<p align="center">
+<p>
   <a href="#-the-problem-toy-demo-syndrome">The Problem</a> •
   <a href="#-8-core-superpowers">Superpowers</a> •
   <a href="#-system-architecture">Architecture</a> •
@@ -25,7 +20,7 @@
   <a href="#-battle-tested-track-record">Benchmarks</a>
 </p>
 
-<p align="center">
+<p>
   <a href="README.md"><b>English</b></a> | <a href="README_zh.md"><b>中文文档</b></a>
 </p>
 
