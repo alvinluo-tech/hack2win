@@ -243,6 +243,38 @@ and enforce dual mechanical verification gates before delivery."
 
 ---
 
+## 🧩 Agent Compatibility Matrix
+
+`hack2win` ships one canonical engine (`SKILL.md` + `references/`) and wires it into every mainstream AI coding agent via a **one-command installer** that auto-detects your installed tools:
+
+| Agent | Mechanism | Install Target |
+|---|---|---|
+| **Claude Code** | Native skill (SKILL.md) | `~/.claude/skills/hack2win/` |
+| **OpenAI Codex** | Native skill + `AGENTS.md` managed block + `/hack2win` prompt | `~/.codex/skills/`, `~/.codex/AGENTS.md`, `~/.codex/prompts/hack2win.md` |
+| **ZCode / OpenClaw** | Native skill | `~/.zcode/skills/hack2win/`, `~/.agents/skills/hack2win/` |
+| **OpenCode** | Native skill | `~/.config/opencode/skill/hack2win/` |
+| **Cursor** | Project rule (`.mdc`) | `.cursor/rules/hack2win.mdc` *(project mode)* |
+| **Windsurf** | Project rule | `.windsurf/rules/hack2win.md` *(project mode)* |
+| **GitHub Copilot** | Custom instructions snippet | `.github/copilot-instructions.md` *(project mode)* |
+| **Any agents.md tool** (Jules, Factory, Amp, Zed…) | Root `AGENTS.md` router | repo `AGENTS.md` *(project mode)* |
+
+```bash
+git clone https://github.com/alvinluo-tech/hack2win.git && cd hack2win
+
+./install.sh                 # macOS / Linux / Git Bash — global install, auto-detects agents
+./install.sh --project       # + wire rules into the current project (Cursor/Windsurf/Copilot/AGENTS.md)
+./install.sh -u              # clean uninstall (removes copies + managed blocks)
+
+# Windows:
+powershell -ExecutionPolicy Bypass -File install.ps1              # global
+powershell -ExecutionPolicy Bypass -File install.ps1 -ProjectDir  # + current project
+powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall   # uninstall
+```
+
+The installer is **idempotent** (safe to re-run) and uses marked blocks (`>>> hack2win >>>` … `<<< hack2win <<<`) so it never touches your existing config. For non-skill agents (Codex, Cursor, Copilot), adapters act as a thin router: *activate on hackathon keywords → read the canonical `SKILL.md` → obey the dual mechanical gates*.
+
+---
+
 ## 📚 The 14 Reference Manuals
 
 `hack2win` is driven by a comprehensive, modular knowledge base. Every manual is versioned, relative, and completely self-contained:

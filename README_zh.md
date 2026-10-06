@@ -243,6 +243,38 @@ powershell -File ~/.agents/skills/hack2win/scripts/list-skills.ps1
 
 ---
 
+## 🧩 主流智能体兼容矩阵
+
+`hack2win` 采用“单一权威引擎(`SKILL.md` + `references/`)+ 多端适配层”架构，通过**一键安装脚本**自动探测本机已装的智能体工具并完成接入：
+
+| 智能体 | 接入机制 | 落盘位置 |
+|---|---|---|
+| **Claude Code** | 原生技能 (SKILL.md) | `~/.claude/skills/hack2win/` |
+| **OpenAI Codex** | 原生技能 + `AGENTS.md` 托管块 + `/hack2win` 提示词 | `~/.codex/skills/`、`~/.codex/AGENTS.md`、`~/.codex/prompts/hack2win.md` |
+| **ZCode / OpenClaw** | 原生技能 | `~/.zcode/skills/hack2win/`、`~/.agents/skills/hack2win/` |
+| **OpenCode** | 原生技能 | `~/.config/opencode/skill/hack2win/` |
+| **Cursor** | 项目规则 (`.mdc`) | `.cursor/rules/hack2win.mdc` *(项目模式)* |
+| **Windsurf** | 项目规则 | `.windsurf/rules/hack2win.md` *(项目模式)* |
+| **GitHub Copilot** | 自定义指令片段 | `.github/copilot-instructions.md` *(项目模式)* |
+| **一切 agents.md 规范工具**(Jules、Factory、Amp、Zed…) | 仓库根 `AGENTS.md` 路由 | 仓库 `AGENTS.md` *(项目模式)* |
+
+```bash
+git clone https://github.com/alvinluo-tech/hack2win.git && cd hack2win
+
+./install.sh                 # macOS / Linux / Git Bash — 全局安装,自动探测智能体
+./install.sh --project       # 额外把规则接入当前项目(Cursor/Windsurf/Copilot/AGENTS.md)
+./install.sh -u              # 干净卸载(移除副本与托管块)
+
+# Windows:
+powershell -ExecutionPolicy Bypass -File install.ps1              # 全局
+powershell -ExecutionPolicy Bypass -File install.ps1 -ProjectDir  # + 当前项目
+powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall   # 卸载
+```
+
+安装脚本**幂等可重跑**，并使用标记块(`>>> hack2win >>>` … `<<< hack2win <<<`)托管写入，绝不污染你已有的配置。对无原生技能机制的工具(Codex、Cursor、Copilot),适配器只做轻量路由:*命中黑客松关键词即激活 → 读取权威 `SKILL.md` → 强制执行双重机械化门禁*。
+
+---
+
 ## 📚 14 篇模块化知识库
 
 `hack2win` 拥有严密的模块化参考手册树，全部基于相对路径，**100% 自包含**：
