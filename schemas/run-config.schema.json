@@ -118,7 +118,25 @@
         "screenshot_acceptance": { "type": "boolean", "default": true, "description": "全视野截图 + DOM 断言" },
         "sponsor_live_check": { "type": "string", "description": "赞助商技术活体实测留痕路径, 如 'evidence/sponsor-live.log'" },
         "state_mutation_test": { "type": "boolean", "default": true, "description": "ΔState = Action(State) 状态跃迁增量断言" },
-        "runtime_evidence_dir": { "type": "string", "default": "evidence/", "description": "所有运行证据(日志/截图/录屏)统一落盘目录" }
+        "runtime_evidence_dir": { "type": "string", "default": "evidence/", "description": "所有运行证据(日志/截图/录屏)统一落盘目录" },
+        "live_consistency_check": { "type": "string", "description": "G17 活性一致性门: 评委可复跑的 --check 命令, 如 'python scripts/sync_counts.py --check'" }
+      }
+    },
+    "innovation_axes": {
+      "type": "array",
+      "description": "G15 创新轴定级(P1 定稿时冻结): 每轴标 CORE(不可砍, 砍=回 P4) 或 ENH(可砍, 须 FIXED/NOT DONE 留痕); P4 末段 15% 时间只准用于 CORE 轴收尾",
+      "items": {
+        "type": "object",
+        "required": ["axis", "novelty", "grade", "retellable_moment"],
+        "additionalProperties": false,
+        "properties": {
+          "axis": { "type": "string", "enum": ["thesis", "interaction", "form", "data"], "description": "立意切口/交互范式/技术形态/数据构造" },
+          "novelty": { "type": "string", "enum": ["unseen", "seen"], "description": "评委模式归类证据, 至少一轴 unseen 方可定稿" },
+          "grade": { "type": "string", "enum": ["CORE", "ENH"], "description": "CORE=该轴成立所依赖的最小不可砍能力" },
+          "evidence": { "type": "string", "description": "最接近的已知模式(归类证据)" },
+          "retellable_moment": { "type": "string", "minLength": 8, "description": "评委看完演示会主动复述的那一句话(CORE 轴必填)" },
+          "core_capabilities": { "type": "array", "items": { "type": "string" }, "description": "CORE 轴的最小能力清单, 逐项须有钉子测试" }
+        }
       }
     }
   }

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="docs/assets/logo.svg" alt="hack2win logo" width="180"/>
 
@@ -299,7 +299,8 @@ powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall   # 卸载
 | `12` | [`12-winning-ui-patterns.md`](references/12-winning-ui-patterns.md) | 顶级大奖作品逆向工程（*PolyAgents*, *AudiThor*, *Voodo*, *Storylayer*）、四维界面坐标系。 |
 | `13` | [`13-winning-knowledge.md`](references/13-winning-knowledge.md) | 30 个真实获奖案例复盘与夺奖规律知识库。 |
 | `14` | [`14-intake-config.md`](references/14-intake-config.md) | 运行配置契约：`run-config.json` 作为冻结的单一真值源、字段语义、冻结与变更纪律。 |
-| `15` | [`15-audit-gates.md`](references/15-audit-gates.md) | 审计门清单、BLOCKER/WARNING/INFO 三级严重度、回环路由表、证据留痕规范、验证子代理接口。 |
+| `15` | [`15-audit-gates.md`](references/15-audit-gates.md) | 审计门清单（G0-G17，九律的机械执法器）、BLOCKER/WARNING/INFO 三级严重度、回环路由表、证据留痕规范。 |
+| `16` | [`16-case-instances.md`](references/16-case-instances.md) | 实例库（非规范）：19 轮实战案例按九律归属索引，含赛型标注与赛型无关性审查记录。 |
 
 </details>
 
@@ -340,8 +341,29 @@ powershell -ExecutionPolicy Bypass -File install.ps1 -Uninstall   # 卸载
 | G7 组件门 | 文本裁切 (V-CLIP) 或可点击区 <20px | **P5** | 5 |
 | G8 叙事真值门 | 动效中硬编码伪高光数值 | **P4** | 2 |
 | G9 赞助商活体门 | 纸面适配器、无真实运行日志 | **P4** | 2 |
+| G12 红队安全门 | 业务端点零鉴权、跨租户越权、客户端注入所有权、422 破信封 | **P4** | 3 |
+| G13 运行时行为门 | 标题名词在运行时从未被拉起、无心跳、状态未翻转 | **P4** | 2 |
+| G14 一致性门 | claim 失真、证据时点漂移、文档数字与门控互异 | **P6** | 2 |
 
 同一 BLOCKER 连续两轮未修复即升级为**根因问题**；达到重试上限后**禁止静默交付已知缺陷**——必须诚实降级并披露限制，或向用户升级求助。
+
+---
+
+## ⚖️ 第一性原理九律与补丁纪律 (v20)
+
+黑客松评审是一个**资源受限的对抗性证伪过程**，信任单点失效。一切法则只认一个标准：**存在机械执法器，不依赖自觉**。换任何赛道（Web / 3D / TUI / 跨平台 / 嵌入式 / 纯算法），法则文本不变，只有实例不同：
+
+1. **L1 名实一致律 (Map = Territory)**：UI 数字、文档声明、叙事与运行时真值同源同值。执法器：G8、G13、G14、e2e 前后差值断言。
+2. **L2 失败可见律 (Fail Loud, Fail Closed)**：非法请求拒绝优于放行，严禁静默吞错（裸 except）。执法器：G12 负向探针、四态验收。
+3. **L3 边界不可信律 (Zero-Trust Boundaries)**：输入由服务端单一卡口裁决，客户端声明永不为真值源。执法器：G12 十探针、schema 校验。
+4. **L4 格子全覆盖律 (Grid, not Sampling)**：隔离按“资源 × 操作 × 角色”3×3 矩阵穷举，每格一测试。执法器：G12 隔离矩阵。
+5. **L5 运行时存在律 (Liveness ≠ Existence)**：能力在运行时真实存在，“文件存在”不构成证据。执法器：G13 心跳与状态翻转实测、双帧 sha256。
+6. **L6 验证的验证律 (Meta-Verification)**：门槛必须断言 `failed=0 且 error=0` 并红测过；测试控制自由度。执法器：机械门红测、专用实体隔离。
+7. **L7 契约单点双侧律 (One Choke Point, Both Sides)**：跨界契约在唯一卡口双侧同时钉住，禁止散点修补。执法器：出口编码器 + 入口归一化。
+8. **L8 变更闭包律 (Radius = Dependency Closure)**：变更影响半径等于依赖闭包，横切修复后逐控件重走查。执法器：横切走查清单、全生命周期清理。
+9. **L9 创新可复述律 (Novel × Retellable, 唯一进攻律)**：至少一轴（立意/交互/技术形态/数据）进入评委未见过且 30 秒可懂象限，凝结为 retellable moment；四轴全见过则创新与技术形态分被结构性封顶（实测 91 分的全部残余扣分）。执法器：G15 创新轴打分卡 + 复述测试、12 §六形态升维选型库（K1-K8 超越 CRUD 组件）。
+
+**补丁纪律**：任何实战反馈必须先归因到普遍失败模式并查法典；案例细节只进 [`references/16-case-instances.md`](references/16-case-instances.md) 实例库，死法清单 Top 33 仅作为实例速查，禁止将个例描述直接作为规范。
 
 ---
 

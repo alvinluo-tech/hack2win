@@ -81,6 +81,8 @@ Schema 位于 [`schemas/run-config.schema.json`](../schemas/run-config.schema.js
 | `ui.renderer` | P5 验收时校验依赖是否真实安装 | 声称 R3F 但 `package.json` 无 three |
 | `ui.viewports` | 驱动 `ui_shot.py` 的截图矩阵 | 缺 390px → 窄屏溢出必漏检 |
 | `gates.sponsor_live_check` | 指向真实运行日志路径 | 文件不存在 → 纸面适配器, 一票否决级风险 |
+| `gates.live_consistency_check` | G17 活性一致性门的评委可复跑 `--check` 命令 | 声明了却不可复跑/未红测 → 活门=摆设, DRIFT 类 BLOCKER |
+| `innovation_axes[].grade` | P1 定稿时冻结 CORE/ENH 定级; P4 收尾缓冲只认 CORE 轴 | CORE 轴出现在 NOT DONE 栏 → CORE-AXIS 类 BLOCKER 回 P4 |
 
 ---
 

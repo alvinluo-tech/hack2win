@@ -35,23 +35,24 @@ Check "后端 .env.example" $beEnv $true "配置要素"
 $secretHit = Get-ChildItem -Path $be -Recurse -Include *.py -File | Select-String -Pattern "(sk-[A-Za-z0-9]{20,}|api_key\s*=\s*['\`"][A-Za-z0-9]{16,})" -ErrorAction SilentlyContinue | Select-Object -First 1
 Check "无硬编码密钥" (-not $secretHit) $true "backend 代码内疑似明文key"
 
-# 4. 数据层: ORM + 迁移 + seed
-$models = AnyFile (Join-Path $be "app") @("models") -ErrorAction SilentlyContinue
-if (-not $models) { $models = Test-Path (Join-Path $be "app\models") }
-Check "数据模型目录" $models $true "backend/app/models"
-$mig = (Test-Path (Join-Path $be "alembic")) -or (Test-Path (Join-Path $be "migrations")) -or (AnyFile $be @("alembic.ini","migrations"))
-Check "数据库迁移" $mig $false "alembic/migrations 未发现(赛期可SQLite+create_all,部署必须迁移)"
-$seed = AnyFile $be @("seed*.py","*seed*.py")
-Check "种子数据" $seed $false "seed 脚本未发现"
+# 4. 数据层: ORM/Schema + 迁移 + seed (第一性原理: 支持 Python/TS/Prisma/SQL 等)
+$models = (Test-Path (Join-Path $be "app\models")) -or (Test-Path (Join-Path $be "models")) -or (Test-Path (Join-Path $be "prisma\schema.prisma")) -or (AnyFile $be @("schema.ts","schema.js","models.ts"))
+Check "数据模型层 (models/prisma/schema)" $models $true "backend 数据实体定义"
+$mig = (Test-Path (Join-Path $be "alembic")) -or (Test-Path (Join-Path $be "migrations")) -or (Test-Path (Join-Path $ProjectPath "migrations")) -or (Test-Path (Join-Path $be "prisma\migrations"))
+Check "数据库版本化迁移" $mig $false "migrations/alembic/prisma 未发现(部署必须有序版本链)"
+$seed = (AnyFile $be @("seed*.py","seed*.ts","seed*.js","seed*.sql")) -or (AnyFile $ProjectPath @("seed*.py","seed*.ts","seed*.sql"))
+Check "种子数据脚本" $seed $false "seed 数据脚本未发现(py/ts/js/sql)"
 
-# 5. 接口定义: 路由非空 + 入口
-$route = Get-ChildItem -Path (Join-Path $be "app") -Recurse -Include *.py -File | Where-Object { $_.FullName -match "routes|api|routers|endpoints" } | Select-Object -First 1
-Check "接口路由文件" ($null -ne $route) $true "backend/app/api|routes"
-Check "后端入口 main/app" ((AnyFile $be @("main.py")) -or (Test-Path (Join-Path $be "app\main.py"))) $true ""
+# 5. 接口定义: 路由非空 + 入口 (多语言适配)
+$route = Get-ChildItem -Path (Join-Path $be "app") -Recurse -Include *.py,*.ts,*.js -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match "routes|api|routers|endpoints|controller" } | Select-Object -First 1
+if (-not $route) { $route = Get-ChildItem -Path $be -Recurse -Include *.py,*.ts,*.js -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match "routes|api|controller" } | Select-Object -First 1 }
+Check "接口路由文件" ($null -ne $route) $true "backend routes/api/controller"
+$entry = (AnyFile $be @("main.py","main.ts","server.ts","index.ts","main.go","main.rs")) -or (Test-Path (Join-Path $be "app\main.py")) -or (Test-Path (Join-Path $be "src\index.ts"))
+Check "后端应用入口 (main/server/index)" $entry $true ""
 
 # 6. 错误处理: 后端统一处理 + 前端调用封装
-$errBe = (AnyFile (Join-Path $be "app") @("errors.py","exceptions.py","error_handler*")) -or ((Get-ChildItem -Path $be -Recurse -Include *.py -File | Select-String -Pattern "exception_handler|HTTPException" -ErrorAction SilentlyContinue | Select-Object -First 1) -ne $null)
-Check "后端统一错误处理" $errBe $true "errors.py 或 exception_handler"
+$errBe = (AnyFile (Join-Path $be "app") @("errors.py","exceptions.py","error_handler*")) -or (AnyFile $be @("errors.ts","errors.js","exceptions.ts")) -or ((Get-ChildItem -Path $be -Recurse -Include *.py,*.ts -File | Select-String -Pattern "exception_handler|HTTPException|AppException|ApiError|ErrorHandler" -ErrorAction SilentlyContinue | Select-Object -First 1) -ne $null)
+Check "后端统一错误处理" $errBe $true "errors 模块或全局 exception_handler"
 $feApi = AnyFile (Join-Path $fe "lib") @("api.ts","api.js","http.ts","request.ts") 
 if (-not $feApi) { $feApi = AnyFile (Join-Path $fe "src") @("api.ts","api.js","http.ts") }
 Check "前端统一API封装" $feApi $true "lib/api.ts(错误处理住这)"

@@ -106,22 +106,49 @@ if (Test-Path $composeFile) {
 }
 Report "Docker Compose 集群编排" $composeOk $false ("编排服务数(含 image/build): {0} (推荐包含 app, db, redis 等)" -f $serviceCount)
 
-# 7. 检测数据库版本迁移脚本 (Alembic)
-$alembicVersions = Get-ChildItem -Path (Join-Path $be "alembic\versions") -Filter "*.py" -File -ErrorAction SilentlyContinue
-$hasMigrations = ($null -ne $alembicVersions -and ($alembicVersions | Measure-Object).Count -gt 0)
-Report "Alembic 数据库迁移版本链" $hasMigrations $true ("版本脚本数: {0}" -f $(if ($alembicVersions) { ($alembicVersions | Measure-Object).Count } else { 0 }))
+# 7. 检测数据库版本化迁移链 (第一性原理: 必须有版本控制的有序迁移链, 不限定 Alembic/SQL/Prisma)
+# v19.1 修复(R19 选手红测实锤): 逗号紧跟字符串会被绑定为 Join-Path 的数组参数, 生成垃圾路径导致任何项目必败——
+# 每个元素必须独立加括号求值(PS5.1 参数绑定规则), 且该脚本顶部为 SilentlyContinue, 静默吞错, 红测是唯一能抓住它的手段。
+$migDirs = @(
+    (Join-Path $be "alembic\versions"),
+    (Join-Path $be "migrations"),
+    (Join-Path $be "app\migrations"),
+    (Join-Path $be "prisma\migrations"),
+    (Join-Path $ProjectPath "migrations")
+)
+$migFiles = @()
+foreach ($md in $migDirs) {
+    if (Test-Path $md) {
+        $found = Get-ChildItem -Path $md -File -ErrorAction SilentlyContinue | Where-Object {
+            $_.Extension -match "\.(py|sql|ts|js)$" -or $_.Name -match "migration"
+        }
+        if ($found) { $migFiles += $found }
+    }
+}
+$hasMigrations = ($migFiles.Count -gt 0)
+Report "数据库版本化迁移链 (Versioned Migrations)" $hasMigrations $true ("版本脚本数: {0} (支持 Alembic/SQL/Prisma/Drizzle)" -f $migFiles.Count)
 
-# 8. 检测企业级测试套件 (Tests)
-$testFiles = Get-ChildItem -Path (Join-Path $be "tests") -Recurse -Filter "test_*.py" -File -ErrorAction SilentlyContinue
+# 8. 检测企业级自动化测试套件 (第一性原理: 跨语言识别 Python/TS/Rust/Go 测试用例)
+# v19.1 同上修复: 独立括号求值
+$testDirs = @((Join-Path $be "tests"), (Join-Path $fe "tests"), (Join-Path $fe "__tests__"), (Join-Path $be "test"), (Join-Path $ProjectPath "tests"))
+$testFiles = @()
+foreach ($td in $testDirs) {
+    if (Test-Path $td) {
+        $found = Get-ChildItem -Path $td -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+            $_.Name -match "^test_.*\.py$|\.(test|spec)\.[jt]sx?$|_test\.go$|tests?\.rs$" -and $_.FullName -notmatch "node_modules|\.next|__pycache__"
+        }
+        if ($found) { $testFiles += $found }
+    }
+}
 $testFuncCount = 0
 if ($testFiles) {
     foreach ($tf in $testFiles) {
-        $hits = (Select-String -Path $tf.FullName -Pattern "def test_\w+\(" -ErrorAction SilentlyContinue | Measure-Object).Count
+        $hits = (Select-String -Path $tf.FullName -Pattern "def test_\w+\(|(?:it|test)\s*\(\s*['""`]|func\s+Test\w+\s*\(|#\[test\]" -ErrorAction SilentlyContinue | Measure-Object).Count
         $testFuncCount += $hits
     }
 }
 $testOk = ($testFuncCount -ge 8)
-Report "自动化测试用例数量" $testOk $true ("检测到测试函数: {0} 个 (最低要求: 8 个)" -f $testFuncCount)
+Report "自动化测试用例数量 (Test Suite)" $testOk $true ("检测到测试用例: {0} 个 (最低要求: 8 个; 支持 Python/TS/Rust/Go)" -f $testFuncCount)
 
 # 9. 检测前端生产打包体积预算 (Bundle Chunk Budget <= 500KB)
 $distAssets = @()

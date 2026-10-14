@@ -1,4 +1,4 @@
-# AGENTS.md — hack2win multi-agent entry point
+﻿# AGENTS.md — hack2win multi-agent entry point
 
 This file follows the [agents.md](https://agents.md) convention, read natively by **OpenAI Codex**, **OpenCode**, **Jules**, **Factory**, **Amp**, **Zed**, and other compatible agents.
 Claude Code / ZCode / OpenClaw users: the canonical skill lives at [`SKILL.md`](SKILL.md) — same engine, discovered via the skills mechanism.
@@ -11,14 +11,14 @@ Do NOT activate for: long-cycle enterprise R&D without a timebox, or pure fundra
 
 ## Mandatory protocol (non-negotiable)
 
-1. **Read [`SKILL.md`](SKILL.md) in full before doing anything.** It is the orchestrator constitution (7-phase pipeline, iteration engine, 24 failure red-lines). Follow its routing table into `references/00`–`13` on demand.
+1. **Read [`SKILL.md`](SKILL.md) in full before doing anything.** It is the orchestrator constitution (7-phase pipeline, iteration engine, Eight First Principles, 30 failure red-line instances). Follow its routing table into `references/00`–`16` on demand.
 2. **Dual mechanical gates before delivery**: run
    `python scripts/verify_project.py --project-path <app>` then
    `python scripts/verify_production_complexity.py --project-path <app> --min-loc 4000`.
    Exit code must be `0` for both. Self-reported completion without gate output is forbidden.
 3. **Complexity floor**: production deliverables require LOC ≥ 4,000, ≥ 8 normalized tables, ≥ 16 typed endpoints, ≥ 15 frontend components, and a background async worker. Toy demos are rejected.
 4. **User-Intent Supremacy on UI**: if the user names a visual style (pixel town, 3D voxel world, retro Win98, cyberpunk terminal), obey it 100% and elevate it with authentic details. When unspecified, derive a physical metaphor via `references/12-winning-ui-patterns.md`. Never default to a generic admin dashboard.
-5. **Truth discipline**: every metric rendered in the UI must be a projection of real backend state (no hardcoded fake numbers); every claim in reports needs command output or screenshot evidence in the devlog.
+5. **Truth discipline & Eight First Principles**: obey the Eight Laws (L1 Map=Territory, L2 Fail Loud/Closed, L3 Zero-Trust Boundaries, L4 Grid Not Sampling, L5 Liveness≠Existence, L6 Meta-Verification, L7 One Choke Point Both Sides, L8 Radius=Closure). Every metric rendered in the UI must be a projection of real backend state; every claim in reports needs command output or screenshot evidence in the devlog.
 
 ## Fast command map
 
@@ -28,13 +28,18 @@ Do NOT activate for: long-cycle enterprise R&D without a timebox, or pure fundra
 | Ideate (8 lenses) | `references/01-brainstorm.md` |
 | 3-round adversarial research | `references/02-market-research.md` |
 | Product spec & metaphor | `references/03-product-definition.md` |
-| Build pipeline M0–M4.5 | `references/04-build-playbook.md` |
+| Build pipeline M0–M4.5 & Safety Redline 4 | `references/04-build-playbook.md` |
 | UI polish & clipping audits | `references/05-polish.md` |
-| Pitch & submission | `references/06-pitch-submit.md` |
+| Pitch, submission & claim lint | `references/06-pitch-submit.md` |
 | Complexity floor / anti-toy | `references/08-production-standard.md` |
 | Clean Architecture gates | `references/09-tech-architecture.md` |
 | Skill orchestration registry | `references/10-orchestration.md` |
 | 8-subsystem assembly | `references/11-enterprise-complexity-architecture.md` |
+| Winner UI patterns & metaphors | `references/12-winning-ui-patterns.md` |
+| 30 Winner case studies | `references/13-winning-knowledge.md` |
+| Frozen run contract (`run-config.json`) | `references/14-intake-config.md` |
+| Audit gates (G0–G17, law enforcers) | `references/15-audit-gates.md` |
+| Case instances registry (by 8 laws) | `references/16-case-instances.md` |
 
 ## Install for your agent
 

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="docs/assets/logo.svg" alt="hack2win logo" width="180"/>
 
@@ -299,7 +299,8 @@ The installer is **idempotent** (safe to re-run) and uses marked blocks (`>>> ha
 | `12` | [`12-winning-ui-patterns.md`](references/12-winning-ui-patterns.md) | Reverse-engineering real hackathon winners (*PolyAgents*, *AudiThor*, *Voodo*, *Storylayer*), 4D interface space. |
 | `13` | [`13-winning-knowledge.md`](references/13-winning-knowledge.md) | 30 verified case studies and winner post-mortems from top hackathons. |
 | `14` | [`14-intake-config.md`](references/14-intake-config.md) | Machine-readable run contract: `run-config.json` as the single frozen source of truth, field semantics, freeze & change discipline. |
-| `15` | [`15-audit-gates.md`](references/15-audit-gates.md) | Gate inventory, BLOCKER/WARNING/INFO severity model, loop-back routing table, evidence conventions, verifier-agent interface. |
+| `15` | [`15-audit-gates.md`](references/15-audit-gates.md) | Gate inventory (G0-G17, mechanical enforcers of the Eight Laws), BLOCKER/WARNING/INFO severity model, loop-back routing table. |
+| `16` | [`16-case-instances.md`](references/16-case-instances.md) | Case Instance Registry (non-normative): 19 rounds of real hackathon cases indexed by the Eight Laws across genres. |
 
 </details>
 
@@ -340,8 +341,29 @@ Verification never ends with "looks good enough". Every gate returns one of thre
 | G7 Component | Clipped text (V-CLIP) or <20px hit targets | **P5** | 5 |
 | G8 Narrative | Hardcoded fake metrics in animations | **P4** | 2 |
 | G9 Sponsor | Paper-only adapter, no live run log | **P4** | 2 |
+| G12 Red Team | Zero auth on business routes, cross-tenant leak, 422 envelope break | **P4** | 3 |
+| G13 Runtime | Title noun never booted at runtime, zero heartbeat, state un-flipped | **P4** | 2 |
+| G14 Consistency | Claim drift, timestamp drift, doc counts disagreeing with gate logs | **P6** | 2 |
 
 Two consecutive failed rounds on the same BLOCKER escalate it to a **root-cause problem**; hitting the retry cap forbids silently shipping known defects — the agent must either downgrade honestly and disclose the limitation, or escalate to the user.
+
+---
+
+## ⚖️ Nine First Principles & Patch Discipline (v20)
+
+Hackathon judging is a **resource-constrained adversarial falsification process** where trust suffers from single-point failure. Every principle operates on one standard: **it must have a mechanical enforcer, not relying on good intentions**. Across any genre (Web, 3D, TUI, cross-platform, algorithms, mobile), the laws remain identical; only the instances differ:
+
+1. **L1 Map = Territory**: UI numbers, docs, narrative, and runtime state are identical in truth and value. Enforcers: G8, G13, G14, e2e delta assertions.
+2. **L2 Fail Loud, Fail Closed**: Failing closed beats permissive bypass. No silent swallows (`bare except`). Enforcers: G12 negative probes, four-state audits.
+3. **L3 Zero-Trust Boundaries**: Inputs across trust boundaries are arbitrated on the server at single choke points. Enforcers: G12 ten-probe battery, schema normalizers.
+4. **L4 Grid, not Sampling**: Isolation completeness is verified via a 3×3 (Resource × Action × Role) grid with pinned tests per rejected cell. Enforcers: G12 isolation grid.
+5. **L5 Liveness ≠ Existence**: Capabilities must run and be observable at runtime; mere code presence is not evidence. Enforcers: G13 live tick and state flips, dual-frame sha256.
+6. **L6 Meta-Verification**: Gates must assert `failed=0 and error=0` and have undergone a red test; tests must control their own spacetime. Enforcers: Gate red-test rule, dedicated entities.
+7. **L7 One Choke Point, Both Sides**: Invariant cross-cutting contracts (time, auth, envelope) are pinned at single choke points on both egress and ingress. Enforcers: Encoder-level egress, validator-level ingress.
+8. **L8 Radius = Dependency Closure**: A change's radius equals its dependency closure; cross-cutting fixes require walking every dependent UI widget. Enforcers: Cross-cutting walkthrough checklists, full lifecycle teardown.
+9. **L9 Novel × Retellable (the only offensive law)**: At least one axis (wedge / interaction / tech-form / data construction) must land in the "judges have not seen it AND it is explainable in 30 seconds" quadrant, condensed into one retellable moment. All axes "seen" structurally caps the novelty and tech-form scores (this was the entire residual deduction of a measured 91/100 gold run). Enforcers: G15 novelty-axis scorecard + retell test; Tech-Form Elevation Kit K1-K8 (beyond-CRUD components) in ref 12 §6.
+
+**Patch Discipline**: New reviewer feedback must be attributed to a universal failure mode first. Domain details belong only in [`references/16-case-instances.md`](references/16-case-instances.md); Top 33 failure modes serve solely as an instance lookup, never as unabstracted ad-hoc law.
 
 ---
 

@@ -141,23 +141,54 @@ class ComplexityAuditor:
         self.report("Docker Compose 集群编排", service_count >= 2, False,
                     f"编排服务数 (含 image/build): {service_count} (推荐包含 app, db, redis 等)")
 
-        # 7. 检测 Alembic 版本迁移
-        alembic_versions = list((be / "alembic" / "versions").glob("*.py")) if (be / "alembic" / "versions").exists() else []
-        has_mig = len(alembic_versions) > 0
-        self.report("Alembic 数据库迁移版本链", has_mig, True,
-                    f"版本脚本数: {len(alembic_versions)}")
+        # 7. 检测数据库版本化迁移链 (第一性原理: 必须有版本控制的有序迁移链, 不限定 Alembic/SQL/Prisma)
+        migration_files = []
+        mig_dirs = [
+            be / "alembic" / "versions",
+            be / "migrations",
+            be / "app" / "migrations",
+            be / "prisma" / "migrations",
+            self.project_path / "migrations",
+        ]
+        for md in mig_dirs:
+            if md.exists():
+                for f in md.glob("*"):
+                    if f.is_file() and (f.suffix in {".py", ".sql", ".ts", ".js"} or "migration" in f.name.lower()):
+                        migration_files.append(f)
+        has_mig = len(migration_files) > 0
+        self.report("数据库版本化迁移链 (Versioned Migrations)", has_mig, True,
+                    f"检测到版本迁移脚本: {len(migration_files)} 个 (支持 Alembic/SQL/Prisma/Drizzle)")
 
-        # 8. 检测测试用例数量
-        test_files = list((be / "tests").glob("**/test_*.py")) if (be / "tests").exists() else []
+        # 8. 检测自动化测试套件用例数量 (第一性原理: 跨语言识别 Python/TS/Rust/Go 测试用例)
+        test_dirs = [be / "tests", fe / "tests", fe / "__tests__", be / "test", self.project_path / "tests"]
+        test_files = []
+        for td in test_dirs:
+            if td.exists():
+                for root, _, files in os.walk(td):
+                    if any(x in root for x in exclude_dirs):
+                        continue
+                    for f in files:
+                        p = Path(root) / f
+                        if re.search(r"test_.*\.py$|.*[._]test\.[jt]sx?$|.*[._]spec\.[jt]sx?$|.*_test\.go$|.*tests?\.rs$", f, re.IGNORECASE):
+                            test_files.append(p)
+
         test_count = 0
+        test_patterns = [
+            r"def test_\w+\(",                     # Python pytest / unittest
+            r"(?:it|test)\s*\(\s*['\"`]",          # TS/JS Jest / Vitest / Playwright
+            r"func\s+Test\w+\s*\(",                # Go testing
+            r"#\[test\]",                          # Rust test
+        ]
+        combined_test_regex = re.compile("|".join(test_patterns))
         for tf in test_files:
             try:
                 content = tf.read_text(encoding="utf-8", errors="ignore")
-                test_count += len(re.findall(r"def test_\w+\(", content))
+                test_count += len(combined_test_regex.findall(content))
             except Exception:
                 pass
-        self.report("自动化测试用例数量", test_count >= 8, True,
-                    f"检测到测试函数: {test_count} 个 (最低要求: 8 个)")
+
+        self.report("自动化测试用例数量 (Test Suite)", test_count >= 8, True,
+                    f"检测到测试用例: {test_count} 个 (最低要求: 8 个; 支持 Python/TS/Rust/Go)")
 
         # 9. 检测前端生产打包体积预算 (Bundle Chunk Budget <= 500KB)
         dist_assets = []
